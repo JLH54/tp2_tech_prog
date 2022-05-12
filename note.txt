@@ -1,0 +1,2 @@
+Je ne comprend pas pourquoi que quand mon
+Astar arrive a l'idx ~28, il le met a -842150451 ????

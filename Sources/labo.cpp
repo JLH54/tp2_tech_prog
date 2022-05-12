@@ -1,5 +1,7 @@
 #include "labo.h"
 #include <math.h>
+#include <iostream>
+#include <map>
 #include <stdlib.h>
 #include <Windows.h>
 #define MAX 100
@@ -11,6 +13,7 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image.h"
 #include "stb_image_write.h"
+#include <string>
 
 #define HEAP_SIZE UINT32_MAX * UINT32_MAX * 9999999999
 static uint8_t* heap = NULL;
@@ -21,6 +24,8 @@ void* allocate(size_t size) {
 	assert(heap_top <= HEAP_SIZE);
 	return &heap[old_top];
 }
+
+std::map<std::string, Node*>map;
 
 AdjMatrix* create_graph(size_t max_nodes) {
 	AdjMatrix* graph = (AdjMatrix*)allocate(sizeof(AdjMatrix));
@@ -44,6 +49,18 @@ void add_node(AdjMatrix* graph, void* data, Vector2 pos)
 	n->data = data;
 	n->position = pos;
 	n->idx = graph->len - 1;
+
+	//J'ai eu de l'aide de Maxime pour faire en sorte que mon programme ne prenne pas trop de temps(donc s'il y a une ressemblance sa vien de lui)
+	int x = pos.x;
+	int y = pos.y;
+
+	std::string key;
+
+	key += std::to_string(x);
+	key += ",";
+	key += std::to_string(y);
+	
+	map.emplace(key, n);
 }
 
 void add_edge(AdjMatrix* graph, int fromNode, int toNode, uint8_t cost)
@@ -88,7 +105,6 @@ void build_groups(AdjMatrix* graph)
 
 void astar(AdjMatrix* graph, int startNodeIndex, int endNodeIndex, Stack* solvedPath)
 {
-	printf("in the hood");
 	Queue* q = (Queue*)allocate(sizeof(Queue));
 	queue_init(q);
 	Node* n = &graph->nodes[startNodeIndex];
@@ -141,6 +157,7 @@ void astar(AdjMatrix* graph, int startNodeIndex, int endNodeIndex, Stack* solved
 	}
 }
 
+//this is working fine
 void trente_et_un_bmp()
 {
 	heap = (uint8_t*)malloc(HEAP_SIZE);
@@ -175,23 +192,48 @@ void trente_et_un_bmp()
 			position.x = count % w;
 			position.y = count / h;
 			add_node(graph, pixel, position);
-			//Regarde pour celui qui est en en haut
 			if (idx != 0)
 			{
-				//Les add_edge fonctionnent comme il le devrait
-				for (int i = 0; i < graph->len; i++)
-				{
-					if (graph->nodes[i].position.y == graph->nodes[idx].position.y - 1 &&
-						graph->nodes[i].position.x == graph->nodes[idx].position.x)
+				{//Pour regarder s'il est a gauche
+					int x = graph->nodes[idx].position.x - 1;
+					int y = graph->nodes[idx].position.y;
+
+					std::string key;
+
+					key += std::to_string(x);
+					key += ",";
+					key += std::to_string(y);
+					//Les add_edge fonctionnent comme il le devrait
+					if (map.count(key) == 1)
 					{
-						add_edge(graph, idx, i, 1);
-						add_edge(graph, i, idx, 1);
+						Node* temp = map.at(key);
+						if (temp != NULL)
+						{
+							add_edge(graph, idx, temp->idx, 1);
+							add_edge(graph, temp->idx, idx, 1);
+						}
 					}
-					if(graph->nodes[i].position.y == graph->nodes[idx].position.y &&
-						graph->nodes[i].position.x == graph->nodes[idx].position.x - 1)
+					
+				}
+				{//Pour regarder s'il est en haut
+					int x = graph->nodes[idx].position.x;
+					int y = graph->nodes[idx].position.y - 1;
+
+					std::string key;
+
+					key += std::to_string(x);
+					key += ",";
+					key += std::to_string(y);
+					//Les add_edge fonctionnent comme il le devrait
+
+					if (map.count(key) == 1)
 					{
-						add_edge(graph, idx, i, 1);
-						add_edge(graph, i, idx, 1);
+						Node* temp = map.at(key);
+						if (temp != NULL)
+						{
+							add_edge(graph, idx, temp->idx, 1);
+							add_edge(graph, temp->idx, idx, 1);
+						}
 					}
 				}
 			}
@@ -215,6 +257,7 @@ void trente_et_un_bmp()
 	stbi_write_png(filename, w, h, channels, img, w * 3);
 }
 
+//this is working fine
 void soixante_quatre_bmp()
 {
 	heap = (uint8_t*)malloc(HEAP_SIZE);
@@ -253,23 +296,48 @@ void soixante_quatre_bmp()
 			position.x = count % w;
 			position.y = count / h;
 			add_node(graph, pixel, position);
-			//Regarde pour celui qui est en en haut
 			if (idx != 0)
 			{
-				//Les add_edge fonctionnent comme il le devrait
-				for (int i = 0; i < graph->len; i++)
-				{
-					if (graph->nodes[i].position.y == graph->nodes[idx].position.y - 1 &&
-						graph->nodes[i].position.x == graph->nodes[idx].position.x)
+				{//Pour regarder s'il est a gauche
+					int x = graph->nodes[idx].position.x - 1;
+					int y = graph->nodes[idx].position.y;
+
+					std::string key;
+
+					key += std::to_string(x);
+					key += ",";
+					key += std::to_string(y);
+					//Les add_edge fonctionnent comme il le devrait
+					if (map.count(key) == 1)
 					{
-						add_edge(graph, idx, i, 1);
-						add_edge(graph, i, idx, 1);
+						Node* temp = map.at(key);
+						if (temp != NULL)
+						{
+							add_edge(graph, idx, temp->idx, 1);
+							add_edge(graph, temp->idx, idx, 1);
+						}
 					}
-					if (graph->nodes[i].position.y == graph->nodes[idx].position.y &&
-						graph->nodes[i].position.x == graph->nodes[idx].position.x - 1)
+
+				}
+				{//Pour regarder s'il est en haut
+					int x = graph->nodes[idx].position.x;
+					int y = graph->nodes[idx].position.y - 1;
+
+					std::string key;
+
+					key += std::to_string(x);
+					key += ",";
+					key += std::to_string(y);
+					//Les add_edge fonctionnent comme il le devrait
+
+					if (map.count(key) == 1)
 					{
-						add_edge(graph, idx, i, 1);
-						add_edge(graph, i, idx, 1);
+						Node* temp = map.at(key);
+						if (temp != NULL)
+						{
+							add_edge(graph, idx, temp->idx, 1);
+							add_edge(graph, temp->idx, idx, 1);
+						}
 					}
 				}
 			}
@@ -293,6 +361,7 @@ void soixante_quatre_bmp()
 	stbi_write_png(filename, w, h, channels, img, w * 3);
 }
 
+//this is working fine
 void cent_vingt_huit_bmp()
 {
 	heap = (uint8_t*)malloc(HEAP_SIZE);
@@ -367,6 +436,7 @@ void cent_vingt_huit_bmp()
 	stbi_write_png(filename, w, h, channels, img, w * 3);
 }
 
+//this is working fine
 void cinq_cent_douse_bmp()
 {
 	heap = (uint8_t*)malloc(HEAP_SIZE);
@@ -401,23 +471,48 @@ void cinq_cent_douse_bmp()
 			position.x = count % w;
 			position.y = count / h;
 			add_node(graph, pixel, position);
-			//Regarde pour celui qui est en en haut
 			if (idx != 0)
 			{
-				//Les add_edge fonctionnent comme il le devrait
-				for (int i = 0; i < graph->len; i++)
-				{
-					if (graph->nodes[i].position.y == graph->nodes[idx].position.y - 1 &&
-						graph->nodes[i].position.x == graph->nodes[idx].position.x)
+				{//Pour regarder s'il est a gauche
+					int x = graph->nodes[idx].position.x - 1;
+					int y = graph->nodes[idx].position.y;
+
+					std::string key;
+
+					key += std::to_string(x);
+					key += ",";
+					key += std::to_string(y);
+					//Les add_edge fonctionnent comme il le devrait
+					if (map.count(key) == 1)
 					{
-						add_edge(graph, idx, i, 1);
-						add_edge(graph, i, idx, 1);
+						Node* temp = map.at(key);
+						if (temp != NULL)
+						{
+							add_edge(graph, idx, temp->idx, 1);
+							add_edge(graph, temp->idx, idx, 1);
+						}
 					}
-					if (graph->nodes[i].position.y == graph->nodes[idx].position.y &&
-						graph->nodes[i].position.x == graph->nodes[idx].position.x - 1)
+
+				}
+				{//Pour regarder s'il est en haut
+					int x = graph->nodes[idx].position.x;
+					int y = graph->nodes[idx].position.y - 1;
+
+					std::string key;
+
+					key += std::to_string(x);
+					key += ",";
+					key += std::to_string(y);
+					//Les add_edge fonctionnent comme il le devrait
+
+					if (map.count(key) == 1)
 					{
-						add_edge(graph, idx, i, 1);
-						add_edge(graph, i, idx, 1);
+						Node* temp = map.at(key);
+						if (temp != NULL)
+						{
+							add_edge(graph, idx, temp->idx, 1);
+							add_edge(graph, temp->idx, idx, 1);
+						}
 					}
 				}
 			}
@@ -441,6 +536,7 @@ void cinq_cent_douse_bmp()
 	stbi_write_png(filename, w, h, channels, img, w * 3);
 }
 
+//this is working fine
 void quarante_bmp()
 {
 	heap = (uint8_t*)malloc(HEAP_SIZE);
@@ -478,20 +574,46 @@ void quarante_bmp()
 			//Regarde pour celui qui est en en haut
 			if (idx != 0)
 			{
-				//Les add_edge fonctionnent comme il le devrait
-				for (int i = 0; i < graph->len; i++)
-				{
-					if (graph->nodes[i].position.y == graph->nodes[idx].position.y - 1 &&
-						graph->nodes[i].position.x == graph->nodes[idx].position.x)
+				{//Pour regarder s'il est a gauche
+					int x = graph->nodes[idx].position.x - 1;
+					int y = graph->nodes[idx].position.y;
+
+					std::string key;
+
+					key += std::to_string(x);
+					key += ",";
+					key += std::to_string(y);
+					//Les add_edge fonctionnent comme il le devrait
+					if (map.count(key) == 1)
 					{
-						add_edge(graph, idx, i, 1);
-						add_edge(graph, i, idx, 1);
+						Node* temp = map.at(key);
+						if (temp != NULL)
+						{
+							add_edge(graph, idx, temp->idx, 1);
+							add_edge(graph, temp->idx, idx, 1);
+						}
 					}
-					if (graph->nodes[i].position.y == graph->nodes[idx].position.y &&
-						graph->nodes[i].position.x == graph->nodes[idx].position.x - 1)
+
+				}
+				{//Pour regarder s'il est en haut
+					int x = graph->nodes[idx].position.x;
+					int y = graph->nodes[idx].position.y - 1;
+
+					std::string key;
+
+					key += std::to_string(x);
+					key += ",";
+					key += std::to_string(y);
+					//Les add_edge fonctionnent comme il le devrait
+
+					if (map.count(key) == 1)
 					{
-						add_edge(graph, idx, i, 1);
-						add_edge(graph, i, idx, 1);
+						Node* temp = map.at(key);
+						if (temp != NULL)
+						{
+							add_edge(graph, idx, temp->idx, 1);
+							add_edge(graph, temp->idx, idx, 1);
+						}
 					}
 				}
 			}
@@ -515,6 +637,7 @@ void quarante_bmp()
 	stbi_write_png(filename, w, h, channels, img, w * 3);
 }
 
+//this is working fine
 void braid2k()
 {
 	heap = (uint8_t*)malloc(HEAP_SIZE);
@@ -552,20 +675,46 @@ void braid2k()
 			//Regarde pour celui qui est en en haut
 			if (idx != 0)
 			{
-				//Les add_edge fonctionnent comme il le devrait
-				for (int i = 0; i < graph->len; i++)
-				{
-					if (graph->nodes[i].position.y == graph->nodes[idx].position.y - 1 &&
-						graph->nodes[i].position.x == graph->nodes[idx].position.x)
+				{//Pour regarder s'il est a gauche
+					int x = graph->nodes[idx].position.x - 1;
+					int y = graph->nodes[idx].position.y;
+
+					std::string key;
+
+					key += std::to_string(x);
+					key += ",";
+					key += std::to_string(y);
+					//Les add_edge fonctionnent comme il le devrait
+					if (map.count(key) == 1)
 					{
-						add_edge(graph, idx, i, 1);
-						add_edge(graph, i, idx, 1);
+						Node* temp = map.at(key);
+						if (temp != NULL)
+						{
+							add_edge(graph, idx, temp->idx, 1);
+							add_edge(graph, temp->idx, idx, 1);
+						}
 					}
-					if (graph->nodes[i].position.y == graph->nodes[idx].position.y &&
-						graph->nodes[i].position.x == graph->nodes[idx].position.x - 1)
+
+				}
+				{//Pour regarder s'il est en haut
+					int x = graph->nodes[idx].position.x;
+					int y = graph->nodes[idx].position.y - 1;
+
+					std::string key;
+
+					key += std::to_string(x);
+					key += ",";
+					key += std::to_string(y);
+					//Les add_edge fonctionnent comme il le devrait
+
+					if (map.count(key) == 1)
 					{
-						add_edge(graph, idx, i, 1);
-						add_edge(graph, i, idx, 1);
+						Node* temp = map.at(key);
+						if (temp != NULL)
+						{
+							add_edge(graph, idx, temp->idx, 1);
+							add_edge(graph, temp->idx, idx, 1);
+						}
 					}
 				}
 			}
@@ -589,6 +738,7 @@ void braid2k()
 	stbi_write_png(filename, w, h, channels, img, w * 3);
 }
 
+//this is working fine
 void combo()
 {
 	heap = (uint8_t*)malloc(HEAP_SIZE);
@@ -626,20 +776,46 @@ void combo()
 			//Regarde pour celui qui est en en haut
 			if (idx != 0)
 			{
-				//Les add_edge fonctionnent comme il le devrait
-				for (int i = 0; i < graph->len; i++)
-				{
-					if (graph->nodes[i].position.y == graph->nodes[idx].position.y - 1 &&
-						graph->nodes[i].position.x == graph->nodes[idx].position.x)
+				{//Pour regarder s'il est a gauche
+					int x = graph->nodes[idx].position.x - 1;
+					int y = graph->nodes[idx].position.y;
+
+					std::string key;
+
+					key += std::to_string(x);
+					key += ",";
+					key += std::to_string(y);
+					//Les add_edge fonctionnent comme il le devrait
+					if (map.count(key) == 1)
 					{
-						add_edge(graph, idx, i, 1);
-						add_edge(graph, i, idx, 1);
+						Node* temp = map.at(key);
+						if (temp != NULL)
+						{
+							add_edge(graph, idx, temp->idx, 1);
+							add_edge(graph, temp->idx, idx, 1);
+						}
 					}
-					if (graph->nodes[i].position.y == graph->nodes[idx].position.y &&
-						graph->nodes[i].position.x == graph->nodes[idx].position.x - 1)
+
+				}
+				{//Pour regarder s'il est en haut
+					int x = graph->nodes[idx].position.x;
+					int y = graph->nodes[idx].position.y - 1;
+
+					std::string key;
+
+					key += std::to_string(x);
+					key += ",";
+					key += std::to_string(y);
+					//Les add_edge fonctionnent comme il le devrait
+
+					if (map.count(key) == 1)
 					{
-						add_edge(graph, idx, i, 1);
-						add_edge(graph, i, idx, 1);
+						Node* temp = map.at(key);
+						if (temp != NULL)
+						{
+							add_edge(graph, idx, temp->idx, 1);
+							add_edge(graph, temp->idx, idx, 1);
+						}
 					}
 				}
 			}
@@ -663,6 +839,7 @@ void combo()
 	stbi_write_png(filename, w, h, channels, img, w * 3);
 }
 
+//this is working fine
 void perfect2k()
 {
 	heap = (uint8_t*)malloc(HEAP_SIZE);
@@ -697,23 +874,48 @@ void perfect2k()
 			position.x = count % w;
 			position.y = count / h;
 			add_node(graph, pixel, position);
-			//Regarde pour celui qui est en en haut
 			if (idx != 0)
 			{
-				//Les add_edge fonctionnent comme il le devrait
-				for (int i = 0; i < graph->len; i++)
-				{
-					if (graph->nodes[i].position.y == graph->nodes[idx].position.y - 1 &&
-						graph->nodes[i].position.x == graph->nodes[idx].position.x)
+				{//Pour regarder s'il est a gauche
+					int x = graph->nodes[idx].position.x - 1;
+					int y = graph->nodes[idx].position.y;
+
+					std::string key;
+
+					key += std::to_string(x);
+					key += ",";
+					key += std::to_string(y);
+					//Les add_edge fonctionnent comme il le devrait
+					if (map.count(key) == 1)
 					{
-						add_edge(graph, idx, i, 1);
-						add_edge(graph, i, idx, 1);
+						Node* temp = map.at(key);
+						if (temp != NULL)
+						{
+							add_edge(graph, idx, temp->idx, 1);
+							add_edge(graph, temp->idx, idx, 1);
+						}
 					}
-					if (graph->nodes[i].position.y == graph->nodes[idx].position.y &&
-						graph->nodes[i].position.x == graph->nodes[idx].position.x - 1)
+
+				}
+				{//Pour regarder s'il est en haut
+					int x = graph->nodes[idx].position.x;
+					int y = graph->nodes[idx].position.y - 1;
+
+					std::string key;
+
+					key += std::to_string(x);
+					key += ",";
+					key += std::to_string(y);
+					//Les add_edge fonctionnent comme il le devrait
+
+					if (map.count(key) == 1)
 					{
-						add_edge(graph, idx, i, 1);
-						add_edge(graph, i, idx, 1);
+						Node* temp = map.at(key);
+						if (temp != NULL)
+						{
+							add_edge(graph, idx, temp->idx, 1);
+							add_edge(graph, temp->idx, idx, 1);
+						}
 					}
 				}
 			}
@@ -733,6 +935,6 @@ void perfect2k()
 		pixel[2] = 0;
 	}
 	//variable pour pouvoir changer le nom du fichier
-	const char* filename = "perfect2k_Solution.png";
+	const char* filename = "perfect2k_Solution.bmp";
 	stbi_write_png(filename, w, h, channels, img, w * 3);
 }

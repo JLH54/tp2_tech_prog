@@ -103,17 +103,96 @@ void build_groups(AdjMatrix* graph)
 	}*/
 }
 
-void astar(AdjMatrix* graph, int startNodeIndex, int endNodeIndex, Stack* solvedPath)
+//Astar avec la matrice d'adjacence
+void astar_with_matrix(AdjMatrix* graph, int startNodeIndex, int endNodeIndex, Stack* solvedPath)
 {
+	//tbh je ne sais pas trop comment utilise Optick
+	// J'ai essayer de suivre ce site puisqu'il n'y a rien dans les notes qui explique comment l'utiliser et le readme de optick vien de leur site qui explique
+	// encore moin : https://subscription.packtpub.com/book/game-development/9781838986193/2/ch02lvl1sec17/integrating-optick
+	OPTICK_THREAD("MainThread");
+	OPTICK_START_CAPTURE();
 	Queue* q = (Queue*)allocate(sizeof(Queue));
 	queue_init(q);
 	Node* n = &graph->nodes[startNodeIndex];
 	Node* endNode = &graph->nodes[endNodeIndex - 1];
 	n->visited = 1;
 	n->cost = 0;
+	OPTICK_PUSH("Pass graph");
 	while (n != NULL)
 	{
-		//boucle infinie
+		for (int i = 0; i < graph->max_size; i++)
+		{
+			for (int c = 0; c < graph->max_size; c++)
+			{
+				if (graph->adjGraph[i][c] > 0 && &graph->nodes[i] == n)
+				{
+					//On regarde s'il a ete changer
+					if (graph->nodes[c].cost != UINT8_MAX)
+					{
+						//On le met visited
+						graph->nodes[c].visited = 1;
+						//calcule son cost
+						int cost = graph->nodes[i].cost + graph->adjGraph[i][c];
+						//si son cout est plus petit on le change
+						if (cost < graph->nodes[c].cost)
+						{
+							graph->nodes[c].cost = cost;
+							graph->nodes[c].path_from = i;
+						}
+					}
+					else
+					{
+						//s'il n'a pas ete changer on met son cost
+						int cost = graph->nodes[i].cost + graph->adjGraph[i][c];
+						graph->nodes[c].cost = cost;
+						graph->nodes[c].path_from = i;
+
+					}
+					if (graph->nodes[c].visited == 0)
+					{
+						queue_push(q, &graph->nodes[c]);
+					}
+				}
+			}
+			n = (Node*)queue_pop(q);
+		}
+	}
+	OPTICK_POP();
+	OPTICK_STOP_CAPTURE();
+	OPTICK_SAVE_CAPTURE("donnee");
+	//on ne se rend pas encore a sa
+	n = &graph->nodes[endNodeIndex - 1];
+	while (n->path_from != UINT64_MAX)
+	{
+		stack_push(solvedPath, n);
+		n = &graph->nodes[n->path_from];
+		if (n == &graph->nodes[startNodeIndex])
+		{
+			stack_push(solvedPath, n);
+			break;
+		}
+	}
+}
+
+//Astar avec la list d'adjacence
+void astar(AdjMatrix* graph, int startNodeIndex, int endNodeIndex, Stack* solvedPath)
+{
+	//tbh je ne sais pas trop comment utilise Optick
+	// J'ai essayer de suivre ce site puisqu'il n'y a rien dans les notes qui explique comment l'utiliser et le readme de optick vien de leur site qui explique
+	// encore moin : https://subscription.packtpub.com/book/game-development/9781838986193/2/ch02lvl1sec17/integrating-optick
+	// sa me remet un fichier, mais je ne suis pas capable de le mettre dans le profiler, d'ou le pourquoi j'en n'ai pas remit puisqu'ils ne montre rien
+	OPTICK_THREAD("MainThread");
+	OPTICK_START_CAPTURE();
+	Queue* q = (Queue*)allocate(sizeof(Queue));
+	queue_init(q);
+	Node* n = &graph->nodes[startNodeIndex];
+	Node* endNode = &graph->nodes[endNodeIndex - 1];
+	n->visited = 1;
+	n->cost = 0;
+	OPTICK_PUSH("Pass graph");
+	while (n != NULL)
+	{
+		
 		for (int c = 0; c < n->max ; c++)
 		{
 			if (n->adj[c]->visited == 0)
@@ -142,7 +221,9 @@ void astar(AdjMatrix* graph, int startNodeIndex, int endNodeIndex, Stack* solved
 		//on pop la queue pour avoir les noeuds qui n'ont pas ete vus
 		n = (Node*)queue_pop(q);
 	}
-
+	OPTICK_POP();
+	OPTICK_STOP_CAPTURE();
+	OPTICK_SAVE_CAPTURE("donnee");
 	//on ne se rend pas encore a sa
 	n = &graph->nodes[endNodeIndex-1];
 	while (n->path_from != UINT64_MAX)

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include "optick.h"
 #include <stdint.h>
 #include "labo.h"
 
@@ -64,6 +65,8 @@ void* queue_pop(Queue* q) {
 
 int main(int argc, char** argv) {
 	
+	
+
 	trente_et_un_bmp();
 
 	//soixante_quatre_bmp();
